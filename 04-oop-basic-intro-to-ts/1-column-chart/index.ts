@@ -9,7 +9,7 @@ interface Options {
 }
 
 export default class ColumnChart {
-  private element: HTMLElement | null;
+  private chartElement: HTMLElement | null;
   private data: number[];
   private label: string;
   private value: number;
@@ -31,7 +31,14 @@ export default class ColumnChart {
     this.link = link;
     this.formatHeading = formatHeading;
 
-    this.element = this.createElement();
+    this.chartElement = this.createElement();
+  }
+
+  get element(): HTMLElement {
+    if (!this.chartElement) {
+      throw new Error("ColumnChart has been destroyed");
+    }
+    return this.chartElement;
   }
 
   private createElement(): HTMLElement {
@@ -48,7 +55,7 @@ export default class ColumnChart {
             class="column-chart__header">
             ${this.formatHeading ? this.formatHeading(this.value) : this.value}
           </div>
-          <div data-element="body" class="column-chart__chart">
+          <div data-element="chart" class="column-chart__chart">
             ${this.renderColumns(this.data)}
           </div>
         </div> 
@@ -87,15 +94,15 @@ export default class ColumnChart {
   public update(data: number[]): void {
     this.data = data;
 
-    if (this.element) {
+    if (this.chartElement) {
       const chart: HTMLElement | null = this.element.querySelector(
-        '[data-element="body"]',
+        '[data-element="chart"]',
       );
 
       if (chart) {
         chart.innerHTML = `${this.renderColumns(data)}`;
 
-        this.element.classList.toggle(
+        this.chartElement.classList.toggle(
           "column-chart_loading",
           !this.data.length,
         );
@@ -104,14 +111,14 @@ export default class ColumnChart {
   }
 
   public remove(): void {
-    if (this.element) {
-      this.element.remove();
+    if (this.chartElement) {
+      this.chartElement.remove();
     }
   }
 
   public destroy(): void {
     this.remove();
-    this.element = null;
+    this.chartElement = null;
     this.data = [];
   }
 }
